@@ -9,3 +9,6 @@ A python script to download music
 ```bash
   python download_music.py
 ```
+
+# Thanks
+Thanks for [musicdl](https://github.com/CharlesPikachu/musicdl)
