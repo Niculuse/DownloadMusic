@@ -96,15 +96,18 @@ class MusicdlGUI(QWidget):
         self.setWindowTitle("MusicdlGUI")
         self.setFixedSize(1250, 600)
 
-        self.init_data()
+        self.init_search_data()
+        self.init_download_data()
         self.init_ui()
         self.bind_events()
 
-    def init_data(self):
+    def init_search_data(self):
         self.music_records = {}
         self.search_threads = []
-        self.download_threads = {}
         self.current_row = 0
+
+    def init_download_data(self):
+        self.download_threads = {}
         self.current_task_id = 0
 
     def init_ui(self):
@@ -201,9 +204,8 @@ class MusicdlGUI(QWidget):
 
     # ================= 搜索 =================
     def search(self):
-        self.init_data()
+        self.init_search_data()
         self.table.setRowCount(0)
-        self.task_table.setRowCount(0)
 
         keywords = [k.strip() for k in self.lineedit_keyword.text().split(";") if k.strip()]
         sources = [cb.text() for cb in self.check_boxes if cb.isChecked()]
@@ -249,7 +251,7 @@ class MusicdlGUI(QWidget):
 
         row = self.table.selectedItems()[0].row()
         info = self.music_records[str(row)]
-        info['work_dir'] = "./downloads"
+        info['work_dir'] = os.path.expanduser("~/Downloads")
 
         task_id = self.current_task_id
         self.current_task_id += 1
@@ -271,10 +273,14 @@ class MusicdlGUI(QWidget):
         thread.start()
 
     def on_task_progress(self, task_id, percent):
+        if task_id not in self.download_threads:
+            return
         _, row = self.download_threads[task_id]
         self.task_table.item(row, 3).setText(f"{percent}%")
 
     def on_task_finished(self, task_id):
+        if task_id not in self.download_threads:
+            return
         _, row = self.download_threads[task_id]
         self.task_table.item(row, 2).setText("Finished")
         self.task_table.item(row, 3).setText("100%")
